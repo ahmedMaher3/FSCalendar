@@ -91,7 +91,6 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 @property (strong, nonatomic) NSIndexPath *lastPressedIndexPath;
 @property (strong, nonatomic) NSMapTable *visibleSectionHeaders;
 
-@end
 
 
 - (void)orientationDidChange:(NSNotification *)notification;
