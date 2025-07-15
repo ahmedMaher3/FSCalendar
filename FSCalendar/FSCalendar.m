@@ -52,7 +52,6 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     NSMutableArray *_selectedDates;
 }
 
-@end
 
 @property (strong, nonatomic) NSArray<UILabel *> *weekdayLabels;
 @property (strong, nonatomic) NSCalendar *gregorian;
@@ -91,6 +90,9 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 
 @property (strong, nonatomic) NSIndexPath *lastPressedIndexPath;
 @property (strong, nonatomic) NSMapTable *visibleSectionHeaders;
+
+@end
+
 
 - (void)orientationDidChange:(NSNotification *)notification;
 
