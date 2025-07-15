@@ -291,6 +291,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
                                              selector:@selector(orientationDidChange:)
                                                  name:UIDeviceOrientationDidChangeNotification
                                                object:nil];
+    [self configureWeekdayLabels];
 }
 
 - (void)dealloc
@@ -854,6 +855,8 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     [self setScope:scope animated:NO];
 }
 
+
+
 - (void)setFirstWeekday:(NSUInteger)firstWeekday
 {
     if (_firstWeekday != firstWeekday) {
@@ -863,10 +866,25 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
         [self invalidateHeaders];
         [self.collectionView reloadData];
         [self configureAppearance];
-        
+        [self configureWeekdayLabels]; // ✅ Add this line
         [self invalidateLayout];
     }
 }
+
+- (void)configureWeekdayLabels
+{
+    if (!self.weekdayLabels || self.weekdayLabels.count != 7) return;
+
+    NSArray<NSString *> *symbols = self.gregorian.shortStandaloneWeekdaySymbols;
+    NSUInteger firstWeekdayIndex = self.firstWeekday - 1; // because firstWeekday is 1-based
+
+    for (NSInteger i = 0; i < self.weekdayLabels.count; i++) {
+        UILabel *label = self.weekdayLabels[i];
+        NSUInteger symbolIndex = (i + firstWeekdayIndex) % 7;
+        label.text = symbols[symbolIndex];
+    }
+}
+
 
 - (void)setToday:(NSDate *)today
 {
