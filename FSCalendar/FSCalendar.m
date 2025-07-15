@@ -52,10 +52,9 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     NSMutableArray *_selectedDates;
 }
 
-@property (strong, nonatomic) NSArray<UILabel *> *weekdayLabels;
-
 @end
 
+@property (strong, nonatomic) NSArray<UILabel *> *weekdayLabels;
 @property (strong, nonatomic) NSCalendar *gregorian;
 @property (strong, nonatomic) NSDateFormatter *formatter;
 @property (strong, nonatomic) NSDateComponents *components;
