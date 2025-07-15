@@ -53,7 +53,6 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 }
 
 
-@property (strong, nonatomic) NSArray<UILabel *> *weekdayLabels;
 @property (strong, nonatomic) NSCalendar *gregorian;
 @property (strong, nonatomic) NSDateFormatter *formatter;
 @property (strong, nonatomic) NSDateComponents *components;
@@ -903,13 +902,15 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 
 - (void)configureWeekdayLabels
 {
-    if (!self.weekdayLabels || self.weekdayLabels.count != 7) return;
+    // Get default labels from FSCalendarWeekdayView
+    NSArray<UILabel *> *labels = self.calendarWeekdayView.weekdayLabels;
+    if (!labels || labels.count != 7) return;
 
     NSArray<NSString *> *symbols = self.gregorian.shortStandaloneWeekdaySymbols;
-    NSUInteger firstWeekdayIndex = self.firstWeekday - 1; // because firstWeekday is 1-based
+    NSUInteger firstWeekdayIndex = self.firstWeekday - 1;
 
-    for (NSInteger i = 0; i < self.weekdayLabels.count; i++) {
-        UILabel *label = self.weekdayLabels[i];
+    for (NSInteger i = 0; i < labels.count; i++) {
+        UILabel *label = labels[i];
         NSUInteger symbolIndex = (i + firstWeekdayIndex) % 7;
         label.text = symbols[symbolIndex];
     }
