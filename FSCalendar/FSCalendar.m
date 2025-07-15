@@ -296,18 +296,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
                                                  name:UIDeviceOrientationDidChangeNotification
                                                object:nil];
 
-    if (!self.weekdayLabels) {
-        NSMutableArray *labels = [NSMutableArray arrayWithCapacity:7];
-        for (NSInteger i = 0; i < 7; i++) {
-            UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
-            label.textAlignment = NSTextAlignmentCenter;
-            label.font = [UIFont systemFontOfSize:13];
-            label.textColor = [UIColor darkGrayColor];
-            [self.contentView addSubview:label];
-            [labels addObject:label];
-        }
-        self.weekdayLabels = labels;
-    }
+
 
     [self configureWeekdayLabels];
 }
