@@ -22,6 +22,7 @@
 #import "FSCalendarWeekdayView.h"
 #import "FSCalendarHeaderView.h"
 
+
 //! Project version number for FSCalendar.
 FOUNDATION_EXPORT double FSCalendarVersionNumber;
 
@@ -263,6 +264,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 IB_DESIGNABLE
 @interface FSCalendar : UIView
+
+/**
+ * 📅 Expose calendar instance to allow firstWeekday customization
+ */
+
+@property (strong, nonatomic) NSCalendar *calendar;
 
 /**
  * The object that acts as the delegate of the calendar.

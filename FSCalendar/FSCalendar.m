@@ -24,6 +24,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+
+
 static inline void FSCalendarAssertDateInBounds(NSDate *date, NSCalendar *calendar, NSDate *minimumDate, NSDate *maximumDate) {
     BOOL valid = YES;
     NSInteger minOffset = [calendar components:NSCalendarUnitDay fromDate:minimumDate toDate:date options:0].day;
@@ -127,6 +129,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 @implementation FSCalendar
 
 @dynamic selectedDate;
+@synthesize calendar = _calendar;
 @synthesize scopeGesture = _scopeGesture, swipeToChooseGesture = _swipeToChooseGesture;
 
 #pragma mark - Life Cycle && Initialize
@@ -136,9 +139,11 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     self = [super initWithFrame:frame];
     if (self) {
         [self initialize];
+        _calendar = [NSCalendar currentCalendar]; // ✅ Set default here
     }
     return self;
 }
+
 
 - (id)initWithCoder:(NSCoder *)aDecoder
 {
