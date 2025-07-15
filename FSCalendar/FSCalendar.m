@@ -46,10 +46,15 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     FSCalendarOrientationPortrait
 };
 
-@interface FSCalendar ()<UICollectionViewDataSource, UICollectionViewDelegate, UIGestureRecognizerDelegate>
+
+@interface FSCalendar () <UICollectionViewDataSource, UICollectionViewDelegate, UIGestureRecognizerDelegate>
 {
-    NSMutableArray  *_selectedDates;
+    NSMutableArray *_selectedDates;
 }
+
+@property (strong, nonatomic) NSArray<UILabel *> *weekdayLabels;
+
+@end
 
 @property (strong, nonatomic) NSCalendar *gregorian;
 @property (strong, nonatomic) NSDateFormatter *formatter;
@@ -291,6 +296,20 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
                                              selector:@selector(orientationDidChange:)
                                                  name:UIDeviceOrientationDidChangeNotification
                                                object:nil];
+
+    if (!self.weekdayLabels) {
+        NSMutableArray *labels = [NSMutableArray arrayWithCapacity:7];
+        for (NSInteger i = 0; i < 7; i++) {
+            UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
+            label.textAlignment = NSTextAlignmentCenter;
+            label.font = [UIFont systemFontOfSize:13];
+            label.textColor = [UIColor darkGrayColor];
+            [self.contentView addSubview:label];
+            [labels addObject:label];
+        }
+        self.weekdayLabels = labels;
+    }
+
     [self configureWeekdayLabels];
 }
 
@@ -344,18 +363,18 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 - (void)layoutSubviews
 {
     [super layoutSubviews];
-    
+
     if (_needsAdjustingViewFrame) {
         _needsAdjustingViewFrame = NO;
-        
+
         if (CGSizeEqualToSize(_transitionCoordinator.cachedMonthSize, CGSizeZero)) {
             _transitionCoordinator.cachedMonthSize = self.frame.size;
         }
-        
+
         BOOL needsAdjustingBoundingRect = (self.scope == FSCalendarScopeMonth) &&
                                           (self.placeholderType != FSCalendarPlaceholderTypeFillSixRows) &&
                                           !self.hasValidateVisibleLayout;
-        
+
         if (_scopeHandle) {
             CGFloat scopeHandleHeight = self.transitionCoordinator.cachedMonthSize.height*0.08;
             _contentView.frame = CGRectMake(0, 0, self.fs_width, self.fs_height-scopeHandleHeight);
@@ -369,20 +388,33 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
         CGFloat rowHeight = self.preferredRowHeight;
         CGFloat padding = 5;
         if (self.scrollDirection == UICollectionViewScrollDirectionHorizontal) {
-            rowHeight = FSCalendarFloor(rowHeight*2)*0.5; // Round to nearest multiple of 0.5. e.g. (16.8->16.5),(16.2->16.0)
+            rowHeight = FSCalendarFloor(rowHeight*2)*0.5;
         }
-        
+
         self.calendarHeaderView.frame = CGRectMake(0, 0, self.fs_width, headerHeight);
         self.calendarWeekdayView.frame = CGRectMake(0, self.calendarHeaderView.fs_bottom, self.contentView.fs_width, weekdayHeight);
 
+        // ✅ Layout custom weekday labels
+        CGFloat labelY = CGRectGetMaxY(self.calendarHeaderView.frame); // under header
+        CGFloat labelHeight = 20.0;
+        CGFloat labelWidth = self.bounds.size.width / 7.0;
+        for (NSInteger i = 0; i < self.weekdayLabels.count; i++) {
+            UILabel *label = self.weekdayLabels[i];
+            label.frame = CGRectMake(i * labelWidth, labelY, labelWidth, labelHeight);
+        }
+
+        // ✅ Shift days container down by weekday label height
+        CGFloat calendarGridTop = labelY + labelHeight;
+
         _deliver.frame = CGRectMake(self.calendarHeaderView.fs_left, self.calendarHeaderView.fs_top, self.calendarHeaderView.fs_width, headerHeight+weekdayHeight);
         _deliver.hidden = self.calendarHeaderView.hidden;
+
         if (!self.floatingMode) {
             switch (self.transitionCoordinator.representingScope) {
                 case FSCalendarScopeMonth: {
                     CGFloat contentHeight = rowHeight*6 + padding*2;
                     CGFloat currentHeight = rowHeight*[self.calculator numberOfRowsInMonth:self.currentPage] + padding*2;
-                    _daysContainer.frame = CGRectMake(0, headerHeight+weekdayHeight, self.fs_width, currentHeight);
+                    _daysContainer.frame = CGRectMake(0, calendarGridTop, self.fs_width, currentHeight);
                     _collectionView.frame = CGRectMake(0, 0, _daysContainer.fs_width, contentHeight);
                     if (needsAdjustingBoundingRect) {
                         self.transitionCoordinator.state = FSCalendarTransitionStateChanging;
@@ -394,31 +426,29 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
                 }
                 case FSCalendarScopeWeek: {
                     CGFloat contentHeight = rowHeight + padding*2;
-                    _daysContainer.frame = CGRectMake(0, headerHeight+weekdayHeight, self.fs_width, contentHeight);
+                    _daysContainer.frame = CGRectMake(0, calendarGridTop, self.fs_width, contentHeight);
                     _collectionView.frame = CGRectMake(0, 0, _daysContainer.fs_width, contentHeight);
                     break;
                 }
             }
         } else {
-            
             CGFloat contentHeight = _contentView.fs_height;
             _daysContainer.frame = CGRectMake(0, 0, self.fs_width, contentHeight);
             _collectionView.frame = _daysContainer.bounds;
-            
         }
+
         _collectionView.fs_height = FSCalendarHalfFloor(_collectionView.fs_height);
         _topBorder.frame = CGRectMake(0, -1, self.fs_width, 1);
         _bottomBorder.frame = CGRectMake(0, self.fs_height, self.fs_width, 1);
         _scopeHandle.fs_bottom = _bottomBorder.fs_top;
-        
     }
-    
+
     if (_needsLayoutForWeekMode) {
         _needsLayoutForWeekMode = NO;
         [self.transitionCoordinator performScopeTransitionFromScope:FSCalendarScopeMonth toScope:FSCalendarScopeWeek animated:NO];
     }
-    
 }
+
 
 #if TARGET_INTERFACE_BUILDER
 - (void)prepareForInterfaceBuilder
