@@ -13,6 +13,13 @@
 
 - (CGFloat)fs_width
 {
+    if (![NSThread isMainThread]) {
+        __block CGFloat width;
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            width = CGRectGetWidth(self.frame);
+        });
+        return width;
+    }
     return CGRectGetWidth(self.frame);
 }
 

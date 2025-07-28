@@ -1377,7 +1377,9 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
                 break;
             }
             case UICollectionViewScrollDirectionHorizontal: {
-                [_collectionView setContentOffset:CGPointMake(scrollOffset * _collectionView.fs_width, 0) animated:animated];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [_collectionView setContentOffset:CGPointMake(scrollOffset * _collectionView.fs_width, 0) animated:animated];
+                });
                 break;
             }
         }
@@ -1487,9 +1489,22 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 #if TARGET_INTERFACE_BUILDER
     return YES;
 #else
-    return self.superview  && !CGRectIsEmpty(_collectionView.frame) && !CGSizeEqualToSize(_collectionViewLayout.collectionViewContentSize, CGSizeZero);
+    if (![NSThread isMainThread]) {
+        __block BOOL result;
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            result = self.superview &&
+                     !CGRectIsEmpty(_collectionView.frame) &&
+                     !CGSizeEqualToSize(_collectionViewLayout.collectionViewContentSize, CGSizeZero);
+        });
+        return result;
+    }
+
+    return self.superview &&
+           !CGRectIsEmpty(_collectionView.frame) &&
+           !CGSizeEqualToSize(_collectionViewLayout.collectionViewContentSize, CGSizeZero);
 #endif
 }
+
 
 - (void)invalidateDateTools
 {
