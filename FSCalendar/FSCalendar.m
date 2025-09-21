@@ -1837,7 +1837,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     return text;
 }
 
--(BOOL)isRTLCalendar {
+-(BOOL) isPersianCalender{
     BOOL isHijriOrPersian =
         [self.calendarIdentifier isEqualToString:NSCalendarIdentifierPersian] ||
         [self.calendarIdentifier isEqualToString:NSCalendarIdentifierIslamic] ||
@@ -1850,7 +1850,6 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 
     return isHijriOrPersian && isRTLLanguage;
 }
-
 
 @end
 
