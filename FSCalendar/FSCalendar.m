@@ -580,11 +580,11 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
             FSCalendarStickyHeader *stickyHeader = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"header" forIndexPath:indexPath];
             stickyHeader.calendar = self;
             if ([self isPersianCalender]) {
-                cell.accessibilityLanguage = @"fa"; // Persian
-                cell.transform = CGAffineTransformIdentity; // don't mirror text
+                stickyHeader.accessibilityLanguage = @"fa"; // Persian
+                stickyHeader.transform = CGAffineTransformIdentity; // don't mirror text
             } else {
-                cell.accessibilityLanguage = @"en"; // English
-                cell.transform = CGAffineTransformIdentity;
+                stickyHeader.accessibilityLanguage = @"en"; // English
+                stickyHeader.transform = CGAffineTransformIdentity;
             }
 
 //            if ([self isPersianCalender]) {
@@ -821,11 +821,11 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 - (void)setCalendarIdentifier:(NSString *)identifier{
     NSCalendar *calendar = [NSCalendar calendarWithIdentifier:identifier];
     if ([self isPersianCalender]) {
-        cell.accessibilityLanguage = @"fa"; // Persian
-        cell.transform = CGAffineTransformIdentity; // don't mirror text
+        self.accessibilityLanguage = @"fa"; // Persian
+        self.transform = CGAffineTransformIdentity; // don't mirror text
     } else {
-        cell.accessibilityLanguage = @"en"; // English
-        cell.transform = CGAffineTransformIdentity;
+        self.accessibilityLanguage = @"en"; // English
+        self.transform = CGAffineTransformIdentity;
     }
 
 //    if ([identifier isRTLCalendar]) {
