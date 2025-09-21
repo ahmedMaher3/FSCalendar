@@ -523,13 +523,23 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
         case FSCalendarPlaceholderTypeNone: {
             if (self.transitionCoordinator.representingScope == FSCalendarScopeMonth && monthPosition != FSCalendarMonthPositionCurrent) {
                 UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:FSCalendarBlankCellReuseIdentifier forIndexPath:indexPath];
-                if([self isPersianCalender]){
-                    cell.accessibilityLanguage = @"Persian";
-                    [cell setTransform:CGAffineTransformMakeScale(-1,1)];
-                } else if ([cell.accessibilityLanguage isEqualToString:@"Persian"]) {
-                    cell.accessibilityLanguage = @"English";
-                    [cell setTransform:CGAffineTransformMakeScale(-1,1)];
+                if ([self isPersianCalender] && [self isPersianCalender]) {
+                    // Hijri + Arabic -> RTL grid
+                    cell.accessibilityLanguage = @"ar";
+                    cell.transform = CGAffineTransformMakeScale(-1, 1);
+                } else {
+                    // English or other LTR -> normal grid
+                    cell.accessibilityLanguage = @"en";
+                    cell.transform = CGAffineTransformIdentity;
                 }
+
+//                if([self isPersianCalender]){
+//                    cell.accessibilityLanguage = @"Persian";
+//                    [cell setTransform:CGAffineTransformMakeScale(-1,1)];
+//                } else if ([cell.accessibilityLanguage isEqualToString:@"Persian"]) {
+//                    cell.accessibilityLanguage = @"English";
+//                    [cell setTransform:CGAffineTransformMakeScale(-1,1)];
+//                }
                 
                 return cell;
             }
@@ -1854,17 +1864,9 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 }
 
 -(BOOL) isPersianCalender{
-    BOOL isHijriOrPersian =
-        [self.calendarIdentifier isEqualToString:NSCalendarIdentifierPersian] ||
-        [self.calendarIdentifier isEqualToString:NSCalendarIdentifierIslamic] ||
-        [self.calendarIdentifier isEqualToString:NSCalendarIdentifierIslamicUmmAlQura] ||
-        [self.calendarIdentifier isEqualToString:NSCalendarIdentifierIslamicCivil] ||
-        [self.calendarIdentifier isEqualToString:NSCalendarIdentifierIslamicTabular];
-
     NSString *langCode = self.locale.languageCode;
-    BOOL isRTLLanguage = langCode && [NSLocale characterDirectionForLanguage:langCode] == NSLocaleLanguageDirectionRightToLeft;
-
-    return isHijriOrPersian && isRTLLanguage;
+     if (!langCode) return NO;
+     return [NSLocale characterDirectionForLanguage:langCode] == NSLocaleLanguageDirectionRightToLeft;
 }
 
 @end
