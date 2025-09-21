@@ -580,12 +580,20 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
             FSCalendarStickyHeader *stickyHeader = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"header" forIndexPath:indexPath];
             stickyHeader.calendar = self;
             if ([self isPersianCalender]) {
-                stickyHeader.accessibilityLanguage = @"Persian";
-                [stickyHeader setTransform:CGAffineTransformMakeScale(-1,1)];
-            } else if ([stickyHeader.accessibilityLanguage isEqualToString:@"Persian"]) {
-                stickyHeader.accessibilityLanguage = @"English";
-                [stickyHeader setTransform:CGAffineTransformMakeScale(-1,1)];
+                cell.accessibilityLanguage = @"fa"; // Persian
+                cell.transform = CGAffineTransformIdentity; // don't mirror text
+            } else {
+                cell.accessibilityLanguage = @"en"; // English
+                cell.transform = CGAffineTransformIdentity;
             }
+
+//            if ([self isPersianCalender]) {
+//                stickyHeader.accessibilityLanguage = @"Persian";
+//                [stickyHeader setTransform:CGAffineTransformMakeScale(-1,1)];
+//            } else if ([stickyHeader.accessibilityLanguage isEqualToString:@"Persian"]) {
+//                stickyHeader.accessibilityLanguage = @"English";
+//                [stickyHeader setTransform:CGAffineTransformMakeScale(-1,1)];
+//            }
             
             stickyHeader.month = [self.gregorian dateByAddingUnit:NSCalendarUnitMonth value:indexPath.section toDate:[self.gregorian fs_firstDayOfMonth:_minimumDate] options:0];
             self.visibleSectionHeaders[indexPath] = stickyHeader;
@@ -812,14 +820,22 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 
 - (void)setCalendarIdentifier:(NSString *)identifier{
     NSCalendar *calendar = [NSCalendar calendarWithIdentifier:identifier];
-    if ([identifier isRTLCalendar]) {
-        //TODO: Totall view did change the direction.
-        self.accessibilityLanguage = @"Persian";
-        [self setTransform:CGAffineTransformMakeScale(-1,1)];
-    } else if ([self.accessibilityLanguage isEqualToString:@"Persian"]) {
-        self.accessibilityLanguage = @"English";
-        [self setTransform:CGAffineTransformMakeScale(-1,1)];
+    if ([self isPersianCalender]) {
+        cell.accessibilityLanguage = @"fa"; // Persian
+        cell.transform = CGAffineTransformIdentity; // don't mirror text
+    } else {
+        cell.accessibilityLanguage = @"en"; // English
+        cell.transform = CGAffineTransformIdentity;
     }
+
+//    if ([identifier isRTLCalendar]) {
+//        //TODO: Totall view did change the direction.
+//        self.accessibilityLanguage = @"Persian";
+//        [self setTransform:CGAffineTransformMakeScale(-1,1)];
+//    } else if ([self.accessibilityLanguage isEqualToString:@"Persian"]) {
+//        self.accessibilityLanguage = @"English";
+//        [self setTransform:CGAffineTransformMakeScale(-1,1)];
+//    }
     
     _today = [calendar dateBySettingHour:0 minute:0 second:0 ofDate:[NSDate date] options:0];
     
