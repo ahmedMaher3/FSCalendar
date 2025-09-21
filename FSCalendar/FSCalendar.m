@@ -1837,9 +1837,20 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     return text;
 }
 
--(BOOL) isPersianCalender{
-    return [self.calendarIdentifier isRTLCalendar];
+-(BOOL)isRTLCalendar {
+    BOOL isHijriOrPersian =
+        [self.calendarIdentifier isEqualToString:NSCalendarIdentifierPersian] ||
+        [self.calendarIdentifier isEqualToString:NSCalendarIdentifierIslamic] ||
+        [self.calendarIdentifier isEqualToString:NSCalendarIdentifierIslamicUmmAlQura] ||
+        [self.calendarIdentifier isEqualToString:NSCalendarIdentifierIslamicCivil] ||
+        [self.calendarIdentifier isEqualToString:NSCalendarIdentifierIslamicTabular];
+
+    NSString *langCode = self.locale.languageCode;
+    BOOL isRTLLanguage = langCode && [NSLocale characterDirectionForLanguage:langCode] == NSLocaleLanguageDirectionRightToLeft;
+
+    return isHijriOrPersian && isRTLLanguage;
 }
+
 
 @end
 
