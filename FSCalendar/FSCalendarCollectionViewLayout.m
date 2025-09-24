@@ -46,6 +46,19 @@
 
 @implementation FSCalendarCollectionViewLayout
 
+static inline BOOL FSCalendarIsRTL(UICollectionView *collectionView) {
+    return [UIView userInterfaceLayoutDirectionForSemanticContentAttribute:collectionView.semanticContentAttribute] == UIUserInterfaceLayoutDirectionRightToLeft;
+}
+
+static inline NSInteger FSCalendarMirroredColumnIfNeeded(UICollectionView *collectionView, NSInteger column) {
+    if (FSCalendarIsRTL(collectionView)) {
+        return 6 - column; // 7 columns: 0..6 -> mirrored
+    }
+    return column;
+}
+
+
+
 - (instancetype)init
 {
     self = [super init];
@@ -409,14 +422,17 @@
         attributes = [UICollectionViewLayoutAttributes layoutAttributesForCellWithIndexPath:indexPath];
         CGRect frame = ({
             CGFloat x, y;
+            NSInteger effectiveColumn = FSCalendarMirroredColumnIfNeeded(self.collectionView, column);
             switch (self.scrollDirection) {
                 case UICollectionViewScrollDirectionHorizontal: {
-                    x = self.lefts[column] + indexPath.section * self.collectionView.fs_width;
+                    x = self.lefts[effectiveColumn] + indexPath.section * self.collectionView.fs_width;
                     y = self.tops[row];
                     break;
                 }
                 case UICollectionViewScrollDirectionVertical: {
-                    x = self.lefts[column];
+                    // For vertical scrolling we only mirror columns (within page),
+                    // section vertical offset remains unchanged.
+                    x = self.lefts[effectiveColumn];
                     if (!self.calendar.floatingMode) {
                         y = self.tops[row] + indexPath.section * self.collectionView.fs_height;
                     } else {
@@ -427,7 +443,7 @@
                 default:
                     break;
             }
-            CGFloat width = self.widths[column];
+            CGFloat width = self.widths[column]; // keep width tied to original column width
             CGFloat height = self.heights[row];
             CGRect frame = CGRectMake(x, y, width, height);
             frame;
@@ -466,24 +482,25 @@
             attributes = [UICollectionViewLayoutAttributes layoutAttributesForDecorationViewOfKind:kFSCalendarSeparatorInterRows withIndexPath:indexPath];
             CGFloat x, y;
             if (!self.calendar.floatingMode) {
-                switch (self.scrollDirection) {
-                    case UICollectionViewScrollDirectionHorizontal: {
-                        x = self.lefts[coordinate.column] + indexPath.section * self.collectionView.fs_width;
-                        y = self.tops[coordinate.row]+self.heights[coordinate.row];
-                        break;
-                    }
-                    case UICollectionViewScrollDirectionVertical: {
-                        x = 0;
-                        y = self.tops[coordinate.row]+self.heights[coordinate.row] + indexPath.section * self.collectionView.fs_height;
-                        break;
-                    }
-                    default:
-                        break;
-                }
-            } else {
-                x = 0;
-                y = self.sectionTops[indexPath.section] + self.headerReferenceSize.height + self.tops[coordinate.row] + self.heights[coordinate.row];
-            }
+                           switch (self.scrollDirection) {
+                               case UICollectionViewScrollDirectionHorizontal: {
+                                   NSInteger effColumn = FSCalendarMirroredColumnIfNeeded(self.collectionView, coordinate.column);
+                                   x = self.lefts[effColumn] + indexPath.section * self.collectionView.fs_width;
+                                   y = self.tops[coordinate.row]+self.heights[coordinate.row];
+                                   break;
+                               }
+                               case UICollectionViewScrollDirectionVertical: {
+                                   x = 0;
+                                   y = self.tops[coordinate.row]+self.heights[coordinate.row] + indexPath.section * self.collectionView.fs_height;
+                                   break;
+                               }
+                               default:
+                                   break;
+                           }
+                       } else {
+                           x = 0;
+                           y = self.sectionTops[indexPath.section] + self.headerReferenceSize.height + self.tops[coordinate.row] + self.heights[coordinate.row];
+                       }
             CGFloat width = self.collectionView.fs_width;
             CGFloat height = FSCalendarStandardSeparatorThickness;
             attributes.frame = CGRectMake(x, y, width, height);
