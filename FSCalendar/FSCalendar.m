@@ -153,153 +153,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     return self;
 }
 
-- (void)initialize
-{
-    if (!_appearance) {
-        _appearance = [[FSCalendarAppearance alloc] init];
-        _appearance.calendar = self;
-    }
-    
-    if (!_gregorian) {
-        _gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
-    }
-   
-    if (!_components) {
-        _components = [[NSDateComponents alloc] init];
-    }
-    if (!_formatter) {
-        _formatter = [[NSDateFormatter alloc] init];
-        _formatter.dateFormat = @"yyyy-MM-dd";
-    }
 
-    if (!_locale) {
-        _locale = [NSLocale currentLocale];
-    }
-    if (!_timeZone) {
-        _timeZone = [NSTimeZone localTimeZone];
-    }
-
-    if (!_firstWeekday || _firstWeekday == 0) {
-        _firstWeekday = 1;
-    }
-    [self invalidateDateTools];
-    
-    if (!_today) {
-        _today = [self.gregorian dateBySettingHour:0 minute:0 second:0 ofDate:[NSDate date] options:0];
-        _currentPage = [self.gregorian fs_firstDayOfMonth:_today];
-    }
-    if (!_minimumDate) {
-        _minimumDate = [self.formatter dateFromString:@"1970-01-01"];
-    }
-    
-    if (!_maximumDate) {
-        _maximumDate = [self.formatter dateFromString:@"2099-12-31"];
-    }
-    
-    _headerHeight     = FSCalendarAutomaticDimension;
-    _weekdayHeight    = FSCalendarAutomaticDimension;
-    _rowHeight        = FSCalendarStandardRowHeight*MAX(1, FSCalendarDeviceIsIPad*1.5);
-    
-    _preferredHeaderHeight  = FSCalendarAutomaticDimension;
-    _preferredWeekdayHeight = FSCalendarAutomaticDimension;
-    _preferredRowHeight     = FSCalendarAutomaticDimension;
-    
-    _scrollDirection = FSCalendarScrollDirectionHorizontal;
-    _scope = FSCalendarScopeMonth;
-    if (!_selectedDates) {
-        _selectedDates = [NSMutableArray arrayWithCapacity:1];
-    }
-    if (!_visibleSectionHeaders) {
-        _visibleSectionHeaders = [NSMapTable weakToWeakObjectsMapTable];
-    }
-    
-    if (!_dataSourceProxy) {
-        _pagingEnabled = YES;
-        _scrollEnabled = YES;
-        _needsAdjustingViewFrame = YES;
-    _needsRequestingBoundingDates = YES;
-    _orientation = self.currentCalendarOrientation;
-    _placeholderType = FSCalendarPlaceholderTypeFillSixRows;
-        
-        _dataSourceProxy = [FSCalendarDelegationFactory dataSourceProxy];
-        _delegateProxy = [FSCalendarDelegationFactory delegateProxy];
-    }
-    
-    if (!self.contentView) {
-        UIView *contentView = [[UIView alloc] initWithFrame:CGRectZero];
-        contentView.backgroundColor = [UIColor clearColor];
-        [self addSubview:contentView];
-        self.contentView = contentView;
-        
-        UIView *daysContainer = [[UIView alloc] initWithFrame:CGRectZero];
-        daysContainer.backgroundColor = [UIColor clearColor];
-        daysContainer.clipsToBounds = YES;
-        [contentView addSubview:daysContainer];
-        self.daysContainer = daysContainer;
-        
-        if (!self.collectionViewLayout) {
-            FSCalendarCollectionViewLayout *collectionViewLayout = [[FSCalendarCollectionViewLayout alloc] init];
-            collectionViewLayout.calendar = self;
-            
-            FSCalendarCollectionView *collectionView = [[FSCalendarCollectionView alloc] initWithFrame:CGRectZero
-                                                                                  collectionViewLayout:collectionViewLayout];
-            collectionView.dataSource = self;
-            collectionView.delegate = self;
-            collectionView.backgroundColor = [UIColor clearColor];
-            collectionView.pagingEnabled = YES;
-            collectionView.showsHorizontalScrollIndicator = NO;
-            collectionView.showsVerticalScrollIndicator = NO;
-            collectionView.allowsMultipleSelection = NO;
-            collectionView.clipsToBounds = YES;
-            [collectionView registerClass:[FSCalendarCell class] forCellWithReuseIdentifier:FSCalendarDefaultCellReuseIdentifier];
-            [collectionView registerClass:[FSCalendarBlankCell class] forCellWithReuseIdentifier:FSCalendarBlankCellReuseIdentifier];
-            [collectionView registerClass:[FSCalendarStickyHeader class] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"header"];
-            [collectionView registerClass:[UICollectionReusableView class] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"placeholderHeader"];
-            [daysContainer addSubview:collectionView];
-            self.collectionView = collectionView;
-            self.collectionViewLayout = collectionViewLayout;
-        }
-    }
-    
-    if (!FSCalendarInAppExtension) {
-        if (!self.topBorder && !self.bottomBorder) {
-            UIView *view = [[UIView alloc] initWithFrame:CGRectZero];
-            view.backgroundColor = FSCalendarStandardLineColor;
-            view.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin; // Stick to top
-            [self addSubview:view];
-            self.topBorder = view;
-            
-            view = [[UIView alloc] initWithFrame:CGRectZero];
-            view.backgroundColor = FSCalendarStandardLineColor;
-            view.autoresizingMask = UIViewAutoresizingFlexibleTopMargin; // Stick to bottom
-            [self addSubview:view];
-            self.bottomBorder = view;
-        }
-    }
-    
-    [self invalidateLayout];
-    
-    // Assistants
-    if (!self.transitionCoordinator) {
-        self.transitionCoordinator = [[FSCalendarTransitionCoordinator alloc] initWithCalendar:self];
-    }
-    
-    if (!self.calculator) {
-        self.calculator = [[FSCalendarCalculator alloc] initWithCalendar:self];
-    }
-    
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:UIDeviceOrientationDidChangeNotification
-                                                  object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(orientationDidChange:)
-                                                 name:UIDeviceOrientationDidChangeNotification
-                                               object:nil];
-
-
-
-    [self configureWeekdayLabels];
-}
 
 - (void)dealloc
 {
@@ -518,29 +372,16 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
     FSCalendarMonthPosition monthPosition = [self.calculator monthPositionForIndexPath:indexPath];
-    
-    switch (self.placeholderType) {
-        case FSCalendarPlaceholderTypeNone: {
-            if (self.transitionCoordinator.representingScope == FSCalendarScopeMonth && monthPosition != FSCalendarMonthPositionCurrent) {
-                UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:FSCalendarBlankCellReuseIdentifier forIndexPath:indexPath];
-                if ([self isPersianCalender] && [self isPersianCalender]) {
-                    // Hijri + Arabic -> RTL grid
-                    cell.accessibilityLanguage = @"ar";
-                    cell.transform = CGAffineTransformMakeScale(-1, 1);
-                } else {
-                    // English or other LTR -> normal grid
-                    cell.accessibilityLanguage = @"en";
-                    cell.transform = CGAffineTransformIdentity;
-                }
 
-//                if([self isPersianCalender]){
-//                    cell.accessibilityLanguage = @"Persian";
-//                    [cell setTransform:CGAffineTransformMakeScale(-1,1)];
-//                } else if ([cell.accessibilityLanguage isEqualToString:@"Persian"]) {
-//                    cell.accessibilityLanguage = @"English";
-//                    [cell setTransform:CGAffineTransformMakeScale(-1,1)];
-//                }
+    switch (self.placeholderType) {
+        case FSCalendarPlaceholderTypeNone: {  case FSCalendarPlaceholderTypeNone: {
+            if (self.transitionCoordinator.representingScope == FSCalendarScopeMonth &&
+                monthPosition != FSCalendarMonthPositionCurrent) {
+
+                UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:FSCalendarBlankCellReuseIdentifier forIndexPath:indexPath];
+                cell.accessibilityLanguage = [self isPersianCalender] ? @"ar" : @"en";
                 
+                cell.transform = CGAffineTransformIdentity; // 🔑 no flip here
                 return cell;
             }
             break;
@@ -549,13 +390,8 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
             if (self.transitionCoordinator.representingScope == FSCalendarScopeMonth) {
                 if (indexPath.item >= 7 * [self.calculator numberOfRowsInSection:indexPath.section]) {
                     UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:FSCalendarBlankCellReuseIdentifier forIndexPath:indexPath];
-                    if ([self isPersianCalender]) {
-                        cell.accessibilityLanguage = @"Persian";
-                        [cell setTransform:CGAffineTransformMakeScale(-1,1)];
-                    } else if ([cell.accessibilityLanguage isEqualToString:@"Persian"]) {
-                        cell.accessibilityLanguage = @"English";
-                        [cell setTransform:CGAffineTransformMakeScale(-1,1)];
-                    }
+                    cell.accessibilityLanguage = [self isPersianCalender] ? @"ar" : @"en";
+                    cell.transform = CGAffineTransformIdentity; // 🔑 no flip here
                     return cell;
                 }
             }
@@ -571,17 +407,23 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     if (!cell) {
         cell = [self.collectionView dequeueReusableCellWithReuseIdentifier:FSCalendarDefaultCellReuseIdentifier forIndexPath:indexPath];
     }
+
     [self reloadDataForCell:cell atIndexPath:indexPath];
+
     if ([self isPersianCalender]) {
-        cell.accessibilityLanguage = @"Persian";
-        [cell setTransform:CGAffineTransformMakeScale(-1,1)];
+        cell.accessibilityLanguage = @"ar"; // or @"fa" if you want Persian locale
+        cell.transform = CGAffineTransformIdentity; // 🔑 keep normal
         cell.titleLabel.text = [self convertEnNumberToFarsi:cell.titleLabel.text];
-    } else if ([cell.accessibilityLanguage isEqualToString:@"Persian"]) {
-        cell.accessibilityLanguage = @"English";
-        [cell setTransform:CGAffineTransformMakeScale(-1,1)];
+        cell.titleLabel.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
+        cell.titleLabel.textAlignment = NSTextAlignmentCenter;
+    } else {
+        cell.accessibilityLanguage = @"en";
+        cell.transform = CGAffineTransformIdentity;
     }
+
     return cell;
 }
+
 
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath
 {
