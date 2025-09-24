@@ -430,8 +430,6 @@ static inline NSInteger FSCalendarMirroredColumnIfNeeded(UICollectionView *colle
                     break;
                 }
                 case UICollectionViewScrollDirectionVertical: {
-                    // For vertical scrolling we only mirror columns (within page),
-                    // section vertical offset remains unchanged.
                     x = self.lefts[effectiveColumn];
                     if (!self.calendar.floatingMode) {
                         y = self.tops[row] + indexPath.section * self.collectionView.fs_height;
@@ -443,9 +441,10 @@ static inline NSInteger FSCalendarMirroredColumnIfNeeded(UICollectionView *colle
                 default:
                     break;
             }
-            CGFloat width = self.widths[column]; // keep width tied to original column width
+            CGFloat width = self.widths[effectiveColumn]; // 👈 fix applied
             CGFloat height = self.heights[row];
             CGRect frame = CGRectMake(x, y, width, height);
+
             frame;
         });
         attributes.frame = frame;
