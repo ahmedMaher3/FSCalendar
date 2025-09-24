@@ -8,7 +8,12 @@
 
 #import <UIKit/UIKit.h>
 
+@class FSCalendar;
+
 @interface FSCalendarCollectionView : UICollectionView
+
+@property (weak, nonatomic) FSCalendar *calendar;
+
 @end
 
 @interface FSCalendarSeparator : UICollectionReusableView

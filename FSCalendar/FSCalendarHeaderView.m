@@ -136,8 +136,14 @@
 - (void)setCalendar:(FSCalendar *)calendar
 {
     _calendar = calendar;
+
+    if ([self.collectionView isKindOfClass:[FSCalendarCollectionView class]]) {
+        ((FSCalendarCollectionView *)self.collectionView).calendar = calendar;
+    }
+
     [self configureAppearance];
 }
+
 
 - (void)setScrollOffset:(CGFloat)scrollOffset
 {
