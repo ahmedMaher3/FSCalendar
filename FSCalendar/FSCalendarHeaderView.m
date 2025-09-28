@@ -63,6 +63,8 @@
     [self addSubview:collectionView];
     [collectionView registerClass:[FSCalendarHeaderCell class] forCellWithReuseIdentifier:@"cell"];
     self.collectionView = collectionView;
+    BOOL isRtl = [NSLocale characterDirectionForLanguage:self.calendar.locale.languageCode] == NSLocaleLanguageDirectionRightToLeft;
+
 }
 
 - (void)layoutSubviews
@@ -137,6 +139,7 @@
 {
     _calendar = calendar;
     [self configureAppearance];
+
 }
 
 - (void)setScrollOffset:(CGFloat)scrollOffset

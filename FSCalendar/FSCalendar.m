@@ -258,6 +258,13 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
             [daysContainer addSubview:collectionView];
             self.collectionView = collectionView;
             self.collectionViewLayout = collectionViewLayout;
+            BOOL isRtl = [NSLocale characterDirectionForLanguage:self.locale.languageCode] == NSLocaleLanguageDirectionRightToLeft;
+
+            if (isRtl) {
+                self.collectionView.semanticContentAttribute = UISemanticContentAttributeForceRightToLeft;
+            } else {
+                self.collectionView.semanticContentAttribute = UISemanticContentAttributeForceRightToLeft;
+            }
         }
     }
     

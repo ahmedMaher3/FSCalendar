@@ -100,30 +100,25 @@
     BOOL useDefaultWeekdayCase = (self.calendar.appearance.caseOptions & (15<<4) ) == FSCalendarCaseOptionsWeekdayUsesDefaultCase;
     
 //    NSInteger firstWeek = self.calendar.firstWeekday;
-    BOOL isRtl = [_calendar.calendarIdentifier isRTLCalendar] && [_calendar.locale isRtlLocale];
-    if (isRtl && [_calendar.locale.localeIdentifier isEqualToString:@"fa-IR"]) {
-        NSString *last = weekdaySymbols.lastObject;
-        [weekdaySymbols removeObject:last];
-        [weekdaySymbols insertObject:last atIndex:0];
-        
-//        weekdaySymbols = [[[weekdaySymbols reverseObjectEnumerator] allObjects] mutableCopy];
+  //  BOOL isRtl = [_calendar.calendarIdentifier isRTLCalendar] && [_calendar.locale isRtlLocale];
+    BOOL isRtl = [NSLocale characterDirectionForLanguage:_calendar.locale.languageCode] == NSLocaleLanguageDirectionRightToLeft;
+
+    if (isRtl) {
+        // Reverse the weekdays array for RTL (Arabic, Persian, etc.)
+        weekdaySymbols = [[[weekdaySymbols reverseObjectEnumerator] allObjects] mutableCopy];
     }
+
     for (NSInteger i = 0; i < self.weekdayPointers.count; i++) {
-        NSInteger index = i;//(i + firstWeek-1) % 7;
+        NSInteger index = i;
         UILabel *label = [self.weekdayPointers pointerAtIndex:i];
         label.font = self.calendar.appearance.weekdayFont;
         label.textColor = self.calendar.appearance.weekdayTextColor;
         label.text = useDefaultWeekdayCase ? weekdaySymbols[index] : [weekdaySymbols[index] uppercaseString];
-        
-        if (isRtl) {
-            if (self.calendar.pagingEnabled) {
-                label.accessibilityLanguage = @"Persian";
-                [label setTransform:CGAffineTransformMakeScale(-1,1)];
-            }
-        } else if ([label.accessibilityLanguage isEqualToString:@"Persian"]) {
-            label.accessibilityLanguage = @"English";
-            [label setTransform:CGAffineTransformMakeScale(-1,1)];
-        }
+
+        // Always keep natural text orientation
+        label.transform = CGAffineTransformIdentity;
+        label.textAlignment = NSTextAlignmentCenter;
+        label.semanticContentAttribute = UISemanticContentAttributeUnspecified;
     }
 }
 

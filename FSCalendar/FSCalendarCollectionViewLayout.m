@@ -399,6 +399,7 @@
 }
 
 // Items
+// Replace the existing method in FSCalendarCollectionViewLayout.m with this one
 - (UICollectionViewLayoutAttributes *)layoutAttributesForItemAtIndexPath:(NSIndexPath *)indexPath
 {
     FSCalendarCoordinate coordinate = [self.calendar.calculator coordinateForIndexPath:indexPath];
@@ -432,11 +433,38 @@
             CGRect frame = CGRectMake(x, y, width, height);
             frame;
         });
+
+        // --- RTL flip logic starts here ---
+        BOOL isRtl = NO;
+        NSString *lang = self.calendar.locale.languageCode;
+        if (lang && lang.length > 0) {
+            isRtl = (NSLocaleLanguageDirectionRightToLeft == [NSLocale characterDirectionForLanguage:lang]);
+        }
+
+        if (isRtl) {
+            // Flip horizontally within the section/page for horizontal scrolling,
+            // or flip the column positions for vertical / floating modes.
+            CGFloat sectionOffsetX = 0;
+            if (self.scrollDirection == UICollectionViewScrollDirectionHorizontal) {
+                sectionOffsetX = floor(indexPath.section * self.collectionView.fs_width);
+                CGFloat localX = frame.origin.x - sectionOffsetX;
+                CGFloat flippedLocalX = (self.collectionView.fs_width - localX - frame.size.width);
+                frame.origin.x = sectionOffsetX + flippedLocalX;
+            } else {
+                // vertical or floating mode - flip columns inside the page width
+                CGFloat localX = frame.origin.x;
+                CGFloat flippedLocalX = (self.collectionView.fs_width - localX - frame.size.width);
+                frame.origin.x = flippedLocalX;
+            }
+        }
+        // --- RTL flip logic ends here ---
+
         attributes.frame = frame;
         self.itemAttributes[indexPath] = attributes;
     }
     return attributes;
 }
+
 
 // Section headers
 - (UICollectionViewLayoutAttributes *)layoutAttributesForSupplementaryViewOfKind:(NSString *)elementKind atIndexPath:(NSIndexPath *)indexPath
