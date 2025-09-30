@@ -153,8 +153,22 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     return self;
 }
 
+- (instancetype)initWithFrame:(CGRect)frame locale:(NSLocale *)locale {
+    self = [super initWithFrame:frame];
+    if (self) {
+        if (locale) {
+            _locale = locale;
+        } else {
+            _locale = [NSLocale currentLocale];
+        }
+        [self initialize];  // Make sure your initialize method is called here manually if needed
+    }
+    return self;
+}
+
 - (void)initialize
 {
+    NSLog(@"Setting locale in subclass: %@", _locale);
     if (!_appearance) {
         _appearance = [[FSCalendarAppearance alloc] init];
         _appearance.calendar = self;
@@ -258,7 +272,9 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
             [daysContainer addSubview:collectionView];
             self.collectionView = collectionView;
             self.collectionViewLayout = collectionViewLayout;
+            
             BOOL isRtl = [NSLocale characterDirectionForLanguage:self.locale.languageCode] == NSLocaleLanguageDirectionRightToLeft;
+            NSLog(@"Current locale language code: %@", self.locale.languageCode);
 
             if (isRtl) {
                 self.collectionView.semanticContentAttribute = UISemanticContentAttributeForceRightToLeft;
@@ -798,14 +814,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 
 - (void)setCalendarIdentifier:(NSString *)identifier{
     NSCalendar *calendar = [NSCalendar calendarWithIdentifier:identifier];
-//    if ([identifier isRTLCalendar]) {
-//        //TODO: Totall view did change the direction.
-//        self.accessibilityLanguage = @"Persian";
-//        [self setTransform:CGAffineTransformMakeScale(-1,1)];
-//    } else if ([self.accessibilityLanguage isEqualToString:@"Persian"]) {
-//        self.accessibilityLanguage = @"English";
-//        [self setTransform:CGAffineTransformMakeScale(-1,1)];
-//    }
+
     
     _today = [calendar dateBySettingHour:0 minute:0 second:0 ofDate:[NSDate date] options:0];
     
@@ -870,7 +879,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
         [self invalidateHeaders];
         [self.collectionView reloadData];
         [self configureAppearance];
-        [self configureWeekdayLabels]; // ✅ Add this line
+        [self configureWeekdayLabels]; 
         [self invalidateLayout];
     }
 }
@@ -1013,8 +1022,28 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
         if (self.hasValidateVisibleLayout) {
             [self invalidateHeaders];
         }
+
+        // Set semanticContentAttribute for RTL
+        BOOL isRtl = [NSLocale characterDirectionForLanguage:_locale.languageCode] == NSLocaleLanguageDirectionRightToLeft;
+        UISemanticContentAttribute attr = isRtl ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+
+        self.semanticContentAttribute = attr;
+        self.contentView.semanticContentAttribute = attr;
+        self.collectionView.semanticContentAttribute = attr;
+
+ 
+        // Reload collectionView too
+        [self.collectionView reloadData];
+        [self.collectionView.collectionViewLayout invalidateLayout];
+        [self.collectionView setNeedsLayout];
+        [self.collectionView layoutIfNeeded];
+
+        [self setNeedsLayout];
+        [self layoutIfNeeded];
     }
 }
+
+
 
 - (void)setAllowsMultipleSelection:(BOOL)allowsMultipleSelection
 {
