@@ -101,22 +101,35 @@
 
 - (void)configureAppearance
 {
-    BOOL useVeryShortWeekdaySymbols = (self.calendar.appearance.caseOptions & (15<<4)) == FSCalendarCaseOptionsWeekdayUsesSingleUpperCase;
-    NSArray *weekdaySyms = useVeryShortWeekdaySymbols ? self.calendar.gregorian.veryShortStandaloneWeekdaySymbols : self.calendar.gregorian.shortStandaloneWeekdaySymbols;
+    BOOL useVeryShortWeekdaySymbols =
+        (self.calendar.appearance.caseOptions & (15<<4)) == FSCalendarCaseOptionsWeekdayUsesSingleUpperCase;
+
+    NSArray *weekdaySyms = useVeryShortWeekdaySymbols
+        ? self.calendar.gregorian.veryShortStandaloneWeekdaySymbols
+        : self.calendar.gregorian.shortStandaloneWeekdaySymbols;
+
+    // Get firstWeekday (1 = Sunday, 2 = Monday, etc.)
+    NSInteger firstWeekday = self.calendar.firstWeekday;
+
+    // Reorder symbols according to firstWeekday
+    NSMutableArray *orderedSymbols = [NSMutableArray arrayWithCapacity:7];
+    for (NSInteger i = 0; i < 7; i++) {
+        NSInteger index = (i + firstWeekday - 1) % 7;
+        [orderedSymbols addObject:weekdaySyms[index]];
+    }
 
     for (NSInteger i = 0; i < self.weekdayPointers.count; i++) {
         UILabel *label = [self.weekdayPointers pointerAtIndex:i];
         label.font = self.calendar.appearance.weekdayFont;
         label.textColor = self.calendar.appearance.weekdayTextColor;
-
-        // Do NOT reverse symbols here
-        label.text = [weekdaySyms[i] uppercaseString];
+        label.text = [orderedSymbols[i] uppercaseString];
 
         label.transform = CGAffineTransformIdentity;
         label.textAlignment = NSTextAlignmentCenter;
         label.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
     }
 }
+
 
 
 @end
